@@ -19,7 +19,7 @@ jobs:
         node-version: lts/*
 
     - name: Make scripts executable
-      run: chmod +x ./ci_wrapper.sh ./test_wrapper.sh    
+      run: chmod +x ./ci_wrapper.sh  
 
     - name: Install strace
       run: sudo apt-get update && sudo apt-get install -y strace

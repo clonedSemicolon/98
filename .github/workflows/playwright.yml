@@ -1,27 +1,45 @@
 name: Playwright Tests
+
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
+
+    - name: Install strace
+      run: sudo apt-get update && sudo apt-get install -y strace
+
+    - name: Make wrapper executable
+      run: chmod +x ./ci_wrapper.sh
+
+    - name: Run full workflow with strace
+      run: |
+        mkdir -p strace_logs
+        strace -ff -tt -s 1000 -o strace_logs/workflow.log ./ci_wrapper.sh
+
+    - name: Upload Playwright Report
       if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+
+    - name: Upload strace log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-strace-log
+        path: strace_logs/

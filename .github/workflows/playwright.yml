@@ -21,13 +21,16 @@ jobs:
     - name: Install strace
       run: sudo apt-get update && sudo apt-get install -y strace
 
-    - name: Make wrapper executable
-      run: chmod +x ./ci_wrapper.sh
+    - name: Make scripts executable
+      run: chmod +x ./ci_wrapper.sh ./test_wrapper.sh
 
-    - name: Run full workflow with strace
+    - name: Run setup (no strace)
+      run: ./ci_wrapper.sh
+
+    - name: Run tests with strace
       run: |
         mkdir -p strace_logs
-        strace -ff -tt -s 1000 -o strace_logs/workflow.log ./ci_wrapper.sh
+        strace -ff -tt -s 1000 -o strace_logs/workflow.log ./test_wrapper.sh
 
     - name: Upload Playwright Report
       if: always()
@@ -37,7 +40,7 @@ jobs:
         path: playwright-report/
         retention-days: 30
 
-    - name: Upload strace log
+    - name: Upload strace logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
